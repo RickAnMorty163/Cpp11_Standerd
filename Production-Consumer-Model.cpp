@@ -5,6 +5,7 @@
 #include <queue>
 #include <condition_variable> //条件变量
 
+// 生产—消费者模型
 using namespace std;
 
 class AA
@@ -14,7 +15,7 @@ class AA
     queue<string, deque<string>> m_q; // 缓存队列
 public:
     // 生产者线程
-    void incache(int num)
+    void incache(int num) // 生产num个数据
     {
         lock_guard<mutex> lock(m_mutex); // 申请加锁
         for (int i = 0; i < num; i++)
@@ -23,7 +24,8 @@ public:
             string message = to_string(index++) + "data"; // 生成一个数据
             m_q.push(message);                            // 将数据加入缓存队列
         }
-        m_cond.notify_one(); // 唤醒一个被当前条件变量阻塞的线程
+        // m_cond.notify_one(); // 唤醒"一个"被当前条件变量m_cond阻塞的线程
+        m_cond.notify_all(); // 唤醒全部线程
     }
     // 消费者线程
     void outcache()
@@ -39,10 +41,11 @@ public:
 
                 message = m_q.front();
                 m_q.pop();
+                cout << "thread:" << this_thread::get_id() << ", " << message << endl;
             }
             // 处理出队的数据
             this_thread::sleep_for(chrono::milliseconds(1)); // 假设需要1ms
-            cout << "thread:" << this_thread::get_id() << ", " << message << endl;
+            // cout << "thread:" << this_thread::get_id() << ", " << message << endl;
         }
     }
 };
