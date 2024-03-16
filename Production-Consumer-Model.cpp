@@ -32,20 +32,22 @@ public:
     {
         while (true)
         {
-            string message;
-            {
-                unique_lock<mutex> lock(m_mutex);
+            // 把互斥锁转换成unique_lock<mutex>,并申请加锁
+            unique_lock<mutex> lock(m_mutex);
 
-                while (m_q.empty())
-                    m_cond.wait(lock); // 当队列为空时，当前线程被阻塞，等待生产者唤醒信号，直到新元素入队
+            // 使用while死循环的目的：防止条件变量虚假唤醒，即消费者线程被唤醒后，缓存队列中没有数据
+            while (m_q.empty())
+                // wait():1.解开互斥锁 -> 2.阻塞，等待被唤醒，-> 3.给互斥锁加锁
+                m_cond.wait(lock); // 当队列为空时，当前线程被阻塞，等待生产者唤醒信号，直到新元素入队
+            // m_cond.wait(lock,[this]{return !m_q.empty();});//wait方法重载版本，效果与while相同
+            //  数据元素出队
+            string message = m_q.front();
+            m_q.pop();
+            cout << "thread:" << this_thread::get_id() << ", " << message << endl;
+            lock.unlock();
 
-                message = m_q.front();
-                m_q.pop();
-                cout << "thread:" << this_thread::get_id() << ", " << message << endl;
-            }
             // 处理出队的数据
             this_thread::sleep_for(chrono::milliseconds(1)); // 假设需要1ms
-            // cout << "thread:" << this_thread::get_id() << ", " << message << endl;
         }
     }
 };
