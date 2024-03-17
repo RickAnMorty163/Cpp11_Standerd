@@ -39,7 +39,9 @@ public:
             while (m_q.empty())
                 // wait():1.解开互斥锁 -> 2.阻塞，等待被唤醒，-> 3.给互斥锁加锁
                 m_cond.wait(lock); // 当队列为空时，当前线程被阻塞，等待生产者唤醒信号，直到新元素入队
+
             // m_cond.wait(lock,[this]{return !m_q.empty();});//wait方法重载版本，效果与while相同
+
             //  数据元素出队
             string message = m_q.front();
             m_q.pop();
