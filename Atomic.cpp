@@ -24,7 +24,7 @@ signed main()
     cout << temp_get_atomic << endl;
     cout << "now atomic value " << a.load() << endl;
 
-    // CAS指令 -> 在特定的时机更新原子变量
+    // CAS指令 -> 实现无锁队列
 
     atomic<int> t = 3;
     int expect = 4; // 期待值
